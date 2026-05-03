@@ -1,0 +1,20 @@
+#!/bin/bash
+
+AGENT_ENV="$HOME/.ssh/agent_env_data"
+
+start_agent() {
+  eval "$(ssh-agent -s)" > /dev/null
+  echo "export SSH_AUTH_SOCK=$SSH_AUTH_SOCK" > "$AGENT_ENV"
+  echo "export SSH_AGENT_PID=$SSH_AGENT_PID" >> "$AGENT_ENV"
+  ssh-add ~/.ssh/id_ed25519
+}
+
+if [ -f "$AGENT_ENV" ]; then
+  source "$AGENT_ENV" > /dev/null
+  if ! kill -0 "$SSH_AGENT_PID" 2>/dev/null; then
+    rm -f "$AGENT_ENV"
+    start_agent
+  fi
+else
+  start_agent
+fi
